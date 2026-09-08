@@ -1,0 +1,32 @@
+# OpenHands (Agent Canvas) — self-hosted deployment with GLM (Zhipu AI) as the LLM backend.
+# Official setup reference: https://docs.openhands.dev/openhands/usage/agent-canvas/setup
+name: openhands
+
+services:
+  openhands:
+    image: ghcr.io/openhands/agent-canvas:${OPENHANDS_VERSION:-1.16.0}
+    container_name: openhands
+    restart: unless-stopped
+    ports:
+      - "${OPENHANDS_BIND:-0.0.0.0}:${OPENHANDS_PORT:-8000}:8000"
+    environment:
+      # API key protecting the canvas/agent-server API, and the key used to encrypt
+      # stored settings/secrets. Generate both with: openssl rand -base64 32
+      LOCAL_BACKEND_API_KEY: ${LOCAL_BACKEND_API_KEY:?Set LOCAL_BACKEND_API_KEY in .env}
+      OH_SECRET_KEY: ${OH_SECRET_KEY:?Set OH_SECRET_KEY in .env}
+
+      # GLM through its OpenAI-compatible endpoint. OpenHands resolves models via
+      # LiteLLM, so the "openai/" prefix plus a custom base URL is the supported way
+      # to target a non-OpenAI OpenAI-compatible API.
+      LLM_MODEL: openai/${GLM_MODEL:-glm-4.6}
+      LLM_API_KEY: ${GLM_API_KEY:?Set GLM_API_KEY in .env}
+      LLM_BASE_URL: ${GLM_BASE_URL:-https://open.bigmodel.cn/api/paas/v4}
+    volumes:
+      # Settings, LLM profiles and conversation state
+      - ${OPENHANDS_DATA_DIR:-./data/openhands}:/home/openhands/.openhands
+      # Project folders the agent may work on (mounted at /projects in its sandbox)
+      - ${PROJECTS_DIR:-./projects}:/projects
+    # Uncomment to let the agent run Docker commands inside its own sandbox
+    # (docker-in-docker). This grants the container full kernel access — only do
+    # this on infrastructure you trust.
+    # privileged: true
