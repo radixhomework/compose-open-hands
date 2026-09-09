@@ -21,6 +21,10 @@ services:
       LLM_MODEL: openai/${GLM_MODEL:-glm-4.6}
       LLM_API_KEY: ${GLM_API_KEY:?Set GLM_API_KEY in .env}
       LLM_BASE_URL: ${GLM_BASE_URL:-https://open.bigmodel.cn/api/paas/v4}
+
+      # Public origin of this instance when served behind a reverse proxy,
+      # e.g. https://openhands.example.com (empty = direct access).
+      OH_WEB_URL: ${OH_WEB_URL:-}
     volumes:
       # Settings, LLM profiles and conversation state
       - ${OPENHANDS_DATA_DIR:-./data/openhands}:/home/openhands/.openhands
